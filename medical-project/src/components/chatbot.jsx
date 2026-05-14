@@ -39,7 +39,7 @@ const CHIPS = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PARTICLE CANVAS — same as login page
+// PARTICLE CANVAS
 // ─────────────────────────────────────────────────────────────────────────────
 function ParticleCanvas({ accentRef }) {
   const canvasRef = useRef(null);
@@ -107,7 +107,7 @@ function ParticleCanvas({ accentRef }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// VITAL BADGE — login page pill style
+// VITAL BADGE
 // ─────────────────────────────────────────────────────────────────────────────
 function VitalBadge({ label, value, status }) {
   const s = STATUS[status] || STATUS.neutral;
@@ -121,7 +121,7 @@ function VitalBadge({ label, value, status }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// VITAL INPUT — matches login page input style
+// VITAL INPUT
 // ─────────────────────────────────────────────────────────────────────────────
 function VitalInput({ label, placeholder, value, onChange, type = "text", status }) {
   const s = STATUS[status] || STATUS.neutral;
@@ -168,8 +168,7 @@ function TypingDots() {
 // ─────────────────────────────────────────────────────────────────────────────
 function EmptyState({ onChip }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-5 text-center px-8 py-16">
-      {/* Eyebrow — same as login page */}
+    <div className="flex-1 flex flex-col items-center justify-center gap-5 text-center px-6 py-12">
       <div className="flex items-center gap-3">
         <div className="w-8 h-px" style={{ background: "linear-gradient(90deg, transparent, #38bdf8)" }} />
         <span className="text-[0.65rem] tracking-[0.2em] uppercase font-medium text-sky-400"
@@ -177,8 +176,7 @@ function EmptyState({ onChip }) {
         <div className="w-8 h-px" style={{ background: "linear-gradient(90deg, #38bdf8, transparent)" }} />
       </div>
 
-      {/* Headline — Playfair like login */}
-      <h2 className="text-3xl font-black text-white leading-tight"
+      <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight"
         style={{ fontFamily: "'Playfair Display', serif" }}>
         Describe your{" "}
         <em className="not-italic" style={{
@@ -188,14 +186,13 @@ function EmptyState({ onChip }) {
       </h2>
       <p className="text-sm font-light leading-relaxed max-w-xs"
         style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'DM Sans', sans-serif" }}>
-        Enter your vitals on the left, then describe your symptoms below for immediate AI guidance.
+        Tap the vitals button above to enter your readings, then describe your symptoms below.
       </p>
 
-      {/* Quick chips */}
-      <div className="flex flex-wrap gap-2 justify-center mt-2">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-center mt-2 w-full">
         {CHIPS.map((c) => (
           <button key={c} onClick={() => onChip(c)}
-            className="px-4 py-2 rounded-full text-xs border transition-all duration-200"
+            className="px-4 py-2 rounded-full text-xs border transition-all duration-200 text-left sm:text-center"
             style={{
               border: "1px solid rgba(255,255,255,0.09)",
               background: "rgba(255,255,255,0.02)",
@@ -221,6 +218,98 @@ function EmptyState({ onChip }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SIDEBAR CONTENT — shared between desktop sidebar & mobile drawer
+// ─────────────────────────────────────────────────────────────────────────────
+function SidebarContent({ temperature, setTemperature, bp, setBp, ts, bs, onClear, onClose }) {
+  return (
+    <div className="flex flex-col gap-6 h-full">
+      {/* Header row for mobile */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-px" style={{ background: "linear-gradient(90deg, transparent, #38bdf8)" }} />
+          <span className="text-[0.6rem] tracking-[0.18em] uppercase font-medium text-sky-400"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}>Patient Vitals</span>
+        </div>
+        {/* Close button — mobile only */}
+        {onClose && (
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-lg"
+            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            ×
+          </button>
+        )}
+      </div>
+
+      {/* Vitals inputs */}
+      <div className="flex flex-col gap-3">
+        <VitalInput label="Temperature (°C)" placeholder="e.g. 37.2"
+          value={temperature} onChange={e => setTemperature(e.target.value)} type="number" status={ts} />
+        <VitalInput label="Blood Pressure" placeholder="e.g. 120/80"
+          value={bp} onChange={e => setBp(e.target.value)} status={bs} />
+
+        <div className="flex flex-col gap-2 mt-1">
+          <VitalBadge label="Temp" value={temperature ? `${temperature}°C` : "—"} status={ts} />
+          <VitalBadge label="BP"   value={bp || "—"} status={bs} />
+        </div>
+      </div>
+
+      <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+
+      {/* Status legend */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-px" style={{ background: "linear-gradient(90deg, transparent, #38bdf8)" }} />
+          <span className="text-[0.6rem] tracking-[0.18em] uppercase font-medium text-sky-400"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}>Status Key</span>
+        </div>
+        <div className="flex flex-col gap-2">
+          {[
+            { color: "#4ade80", label: "Normal range" },
+            { color: "#fbbf24", label: "Elevated — monitor" },
+            { color: "#ef4444", label: "Critical — act now" },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-2.5 p-2.5 rounded-xl border"
+              style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+              <span className="text-[0.72rem]" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+
+      {/* Info card */}
+      <div className="p-3.5 rounded-2xl border"
+        style={{ background: "rgba(56,189,248,0.05)", borderColor: "rgba(56,189,248,0.18)" }}>
+        <p className="text-[0.6rem] uppercase tracking-[0.14em] font-semibold text-sky-400 mb-1.5"
+          style={{ fontFamily: "'DM Sans', sans-serif" }}>How to use</p>
+        <p className="text-[0.72rem] leading-relaxed"
+          style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'DM Sans', sans-serif" }}>
+          Fill in your vitals, then describe your symptoms in detail below. MediAI will return structured, immediate-action guidance.
+        </p>
+      </div>
+
+      {/* Clear button */}
+      <div className="mt-auto">
+        <button onClick={onClear}
+          className="w-full py-2.5 rounded-xl border text-xs font-medium tracking-wide transition-all duration-200"
+          style={{
+            background: "rgba(255,255,255,0.02)",
+            borderColor: "rgba(255,255,255,0.08)",
+            color: "rgba(255,255,255,0.3)",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}>
+          Clear conversation
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 export default function MedicalChatbot() {
@@ -230,15 +319,21 @@ export default function MedicalChatbot() {
   const [messages, setMessages]       = useState([]);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState("");
+  const [drawerOpen, setDrawerOpen]   = useState(false);   // mobile vitals drawer
 
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
   const accentRef   = useRef("56,189,248");
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [drawerOpen]);
 
   const autoResize = () => {
     const el = textareaRef.current;
@@ -250,7 +345,6 @@ export default function MedicalChatbot() {
   const ts = getTempStatus(temperature);
   const bs = getBpStatus(bp);
 
-  // Particle accent reacts to vital status
   useEffect(() => {
     if (ts === "danger" || bs === "danger") accentRef.current = "239,68,68";
     else if (ts === "warn" || bs === "warn") accentRef.current = "251,191,36";
@@ -301,136 +395,138 @@ export default function MedicalChatbot() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
-        @keyframes chatBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
-        @keyframes chatFadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes chatPulse  { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        .chat-msg { animation: chatFadeUp 0.28s ease both; }
+        @keyframes chatBounce  { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+        @keyframes chatFadeUp  { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes chatPulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        @keyframes drawerSlide { from{transform:translateX(-100%)} to{transform:translateX(0)} }
+        .chat-msg      { animation: chatFadeUp 0.28s ease both; }
         .chat-scroll::-webkit-scrollbar { width: 4px; }
         .chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
         textarea::placeholder { color: rgba(255,255,255,0.18); }
         input::placeholder    { color: rgba(255,255,255,0.2); }
         input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        /* ── Mobile drawer ── */
+        .mobile-drawer {
+          position: fixed;
+          inset: 0;
+          z-index: 9998;
+          display: flex;
+        }
+        .mobile-drawer-panel {
+          width: min(82vw, 300px);
+          height: 100%;
+          overflow-y: auto;
+          padding: 24px 20px;
+          background: #0b0b18;
+          border-right: 1px solid rgba(255,255,255,0.09);
+          animation: drawerSlide 0.25s ease;
+        }
+        .mobile-drawer-backdrop {
+          flex: 1;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(2px);
+        }
+
+        /* ── Responsive vitals pill strip ── */
+        .vitals-pill-strip {
+          display: none;
+        }
+        @media (max-width: 767px) {
+          .desktop-sidebar { display: none !important; }
+          .vitals-pill-strip { display: flex; }
+        }
+        @media (min-width: 768px) {
+          .mobile-vitals-btn { display: none !important; }
+        }
       `}</style>
 
-      {/* Root — same bg as login */}
       <div className="relative flex flex-col h-screen overflow-hidden"
         style={{ background: "#06060e", fontFamily: "'DM Sans', sans-serif", color: "#f0f2f7" }}>
 
-        {/* ── Particle canvas — identical to login ── */}
         <ParticleCanvas accentRef={accentRef} />
 
-        {/* ── Background glow — same as login ── */}
         <div className="fixed inset-0 pointer-events-none z-0 transition-all duration-700"
           style={{ background: "radial-gradient(ellipse at 70% 30%, rgba(14,116,144,0.18) 0%, transparent 55%), radial-gradient(ellipse at 20% 80%, rgba(56,189,248,0.06) 0%, transparent 50%)" }} />
 
-        {/* ── Grid overlay — same as login ── */}
         <div className="fixed inset-0 pointer-events-none z-0"
           style={{
             backgroundImage: "linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }} />
 
-        {/* ── Navbar ── */}
+        {/* Navbar */}
         <div className="relative z-[9999]">
           <Navbar />
         </div>
 
-        {/* ── Body ── */}
+        {/* ── Mobile vitals drawer ── */}
+        {drawerOpen && (
+          <div className="mobile-drawer">
+            <div className="mobile-drawer-panel chat-scroll">
+              <SidebarContent
+                temperature={temperature} setTemperature={setTemperature}
+                bp={bp} setBp={setBp}
+                ts={ts} bs={bs}
+                onClear={() => { setMessages([]); setDrawerOpen(false); }}
+                onClose={() => setDrawerOpen(false)}
+              />
+            </div>
+            <div className="mobile-drawer-backdrop" onClick={() => setDrawerOpen(false)} />
+          </div>
+        )}
+
+        {/* Body */}
         <div className="relative z-10 flex flex-1 overflow-hidden min-h-0">
 
-          {/* ── Sidebar — login card style ── */}
-          <aside className="chat-scroll w-64 shrink-0 overflow-y-auto flex flex-col gap-6 p-5"
+          {/* ── Desktop sidebar ── */}
+          <aside className="desktop-sidebar chat-scroll w-64 shrink-0 overflow-y-auto p-5"
             style={{ background: "rgba(255,255,255,0.015)", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
-
-            {/* Section label — login eyebrow style */}
-            <div className="flex items-center gap-2 mt-1">
-              <div className="w-6 h-px" style={{ background: "linear-gradient(90deg, transparent, #38bdf8)" }} />
-              <span className="text-[0.6rem] tracking-[0.18em] uppercase font-medium text-sky-400"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}>Patient Vitals</span>
-            </div>
-
-            {/* Vitals inputs */}
-            <div className="flex flex-col gap-3">
-              <VitalInput label="Temperature (°C)" placeholder="e.g. 37.2"
-                value={temperature} onChange={e => setTemperature(e.target.value)} type="number" status={ts} />
-              <VitalInput label="Blood Pressure" placeholder="e.g. 120/80"
-                value={bp} onChange={e => setBp(e.target.value)} status={bs} />
-
-              {/* Status badges — login pill style */}
-              <div className="flex flex-col gap-2 mt-1">
-                <VitalBadge label="Temp" value={temperature ? `${temperature}°C` : "—"} status={ts} />
-                <VitalBadge label="BP"   value={bp || "—"} status={bs} />
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-
-            {/* Status legend — login info-strip card style */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-px" style={{ background: "linear-gradient(90deg, transparent, #38bdf8)" }} />
-                <span className="text-[0.6rem] tracking-[0.18em] uppercase font-medium text-sky-400"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}>Status Key</span>
-              </div>
-              <div className="flex flex-col gap-2">
-                {[
-                  { color: "#4ade80", label: "Normal range" },
-                  { color: "#fbbf24", label: "Elevated — monitor" },
-                  { color: "#ef4444", label: "Critical — act now" },
-                ].map(({ color, label }) => (
-                  <div key={label} className="flex items-center gap-2.5 p-2.5 rounded-xl border"
-                    style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)" }}>
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                    <span className="text-[0.72rem]" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-
-            {/* Info card — login info-strip style */}
-            <div className="p-3.5 rounded-2xl border"
-              style={{ background: "rgba(56,189,248,0.05)", borderColor: "rgba(56,189,248,0.18)" }}>
-              <p className="text-[0.6rem] uppercase tracking-[0.14em] font-semibold text-sky-400 mb-1.5"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}>How to use</p>
-              <p className="text-[0.72rem] leading-relaxed"
-                style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'DM Sans', sans-serif" }}>
-                Fill in your vitals, then describe your symptoms in detail below. MediAI will return structured, immediate-action guidance.
-              </p>
-            </div>
-
-            {/* Clear button — login card CTA style */}
-            <div className="mt-auto">
-              <button onClick={() => setMessages([])}
-                className="w-full py-2.5 rounded-xl border text-xs font-medium tracking-wide transition-all duration-200"
-                style={{
-                  background: "rgba(255,255,255,0.02)",
-                  borderColor: "rgba(255,255,255,0.08)",
-                  color: "rgba(255,255,255,0.3)",
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.color = "rgba(255,255,255,0.3)"; }}>
-                Clear conversation
-              </button>
-            </div>
+            <SidebarContent
+              temperature={temperature} setTemperature={setTemperature}
+              bp={bp} setBp={setBp}
+              ts={ts} bs={bs}
+              onClear={() => setMessages([])}
+              onClose={null}
+            />
           </aside>
 
           {/* ── Chat column ── */}
           <div className="flex flex-1 flex-col min-w-0 min-h-0">
 
+            {/* ── Mobile top bar: vitals button + badge pills ── */}
+            <div className="mobile-vitals-btn shrink-0 px-4 py-2 flex items-center gap-2 flex-wrap"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(6,6,14,0.7)", backdropFilter: "blur(8px)" }}>
+              <button onClick={() => setDrawerOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all duration-200"
+                style={{
+                  background: "rgba(56,189,248,0.07)",
+                  borderColor: "rgba(56,189,248,0.25)",
+                  color: "#38bdf8",
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                Vitals
+              </button>
+
+              {/* Live vital pills on mobile top bar */}
+              <div className="vitals-pill-strip items-center gap-2 flex-wrap">
+                <VitalBadge label="Temp" value={temperature ? `${temperature}°C` : "—"} status={ts} />
+                <VitalBadge label="BP"   value={bp || "—"} status={bs} />
+              </div>
+            </div>
+
             {/* Messages */}
-            <div className="chat-scroll flex-1 overflow-y-auto flex flex-col gap-5 px-8 py-7 min-h-0">
+            <div className="chat-scroll flex-1 overflow-y-auto flex flex-col gap-4 sm:gap-5 px-3 sm:px-8 py-5 sm:py-7 min-h-0">
               {messages.length === 0
                 ? <EmptyState onChip={t => { setChatInput(t); textareaRef.current?.focus(); }} />
                 : messages.map((msg, i) => (
-                  <div key={i} className={`chat-msg flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                  <div key={i} className={`chat-msg flex gap-2 sm:gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
 
-                    {/* Avatar — login icon style */}
-                    <div className="w-8 h-8 rounded-[10px] shrink-0 self-start flex items-center justify-center text-sm"
+                    {/* Avatar */}
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[10px] shrink-0 self-start flex items-center justify-center text-xs sm:text-sm"
                       style={{
                         background: msg.role === "user"
                           ? "rgba(255,255,255,0.05)"
@@ -442,9 +538,10 @@ export default function MedicalChatbot() {
                       {msg.role === "user" ? "👤" : "⚕"}
                     </div>
 
-                    <div className={`flex flex-col gap-1.5 max-w-[72%] ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                    {/* Bubble + meta */}
+                    <div className={`flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}
+                      style={{ maxWidth: "min(72%, 520px)" }}>
 
-                      {/* Vital badges on user messages */}
                       {msg.role === "user" && (msg.temp || msg.bp) && (
                         <div className="flex gap-2 flex-wrap mb-1">
                           {msg.temp && <VitalBadge label="Temp" value={`${msg.temp}°C`} status={getTempStatus(msg.temp)} />}
@@ -452,8 +549,7 @@ export default function MedicalChatbot() {
                         </div>
                       )}
 
-                      {/* Bubble — login card style */}
-                      <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed"
+                      <div className="rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm leading-relaxed"
                         style={msg.role === "user" ? {
                           background: "linear-gradient(135deg, rgba(56,189,248,0.18), rgba(56,189,248,0.08))",
                           border: "1px solid rgba(56,189,248,0.25)",
@@ -481,8 +577,8 @@ export default function MedicalChatbot() {
 
               {/* Typing indicator */}
               {loading && (
-                <div className="chat-msg flex gap-3">
-                  <div className="w-8 h-8 rounded-[10px] shrink-0 flex items-center justify-center text-sm"
+                <div className="chat-msg flex gap-2 sm:gap-3">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[10px] shrink-0 flex items-center justify-center text-xs sm:text-sm"
                     style={{ background: "linear-gradient(135deg, rgba(56,189,248,0.3), rgba(56,189,248,0.15))", border: "1px solid rgba(56,189,248,0.35)" }}>⚕</div>
                   <div className="rounded-2xl border" style={{ background: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.07)", borderRadius: "4px 14px 14px 14px" }}>
                     <TypingDots />
@@ -492,22 +588,21 @@ export default function MedicalChatbot() {
               <div ref={bottomRef} />
             </div>
 
-            {/* ── Input zone — login CTA style ── */}
-            <div className="shrink-0 px-8 py-4"
+            {/* ── Input zone ── */}
+            <div className="shrink-0 px-3 sm:px-8 py-3 sm:py-4"
               style={{ background: "rgba(6,6,14,0.94)", borderTop: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(10px)" }}>
               {error && (
                 <p className="text-xs mb-2" style={{ color: "#ef4444", fontFamily: "'DM Sans', sans-serif" }}>⚠ {error}</p>
               )}
 
-              {/* Input row — login card border style */}
-              <div className="flex items-center gap-3 rounded-2xl px-4 py-2.5 transition-all duration-200"
+              <div className="flex items-center gap-2 sm:gap-3 rounded-2xl px-3 sm:px-4 py-2.5 transition-all duration-200"
                 style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.09)" }}
                 onFocusCapture={e => e.currentTarget.style.borderColor = "rgba(56,189,248,0.4)"}
                 onBlurCapture={e  => e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"}>
 
                 <textarea
                   ref={textareaRef} rows={1}
-                  placeholder="Describe your emergency or symptoms in detail…"
+                  placeholder="Describe your emergency or symptoms…"
                   value={chatInput}
                   onChange={e => { setChatInput(e.target.value); autoResize(); }}
                   onKeyDown={handleKey}
@@ -518,9 +613,9 @@ export default function MedicalChatbot() {
                   }}
                 />
 
-                {/* Send button — login "Get started" arrow style */}
+                {/* Send button */}
                 <button onClick={sendMessage} disabled={loading}
-                  className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center transition-all duration-200"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 flex items-center justify-center transition-all duration-200"
                   style={{
                     background: loading
                       ? "rgba(255,255,255,0.04)"
@@ -529,7 +624,7 @@ export default function MedicalChatbot() {
                     opacity: loading ? 0.4 : 1,
                     cursor: loading ? "not-allowed" : "pointer",
                   }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
                     stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" fill="#38bdf8" stroke="none" />
@@ -537,8 +632,7 @@ export default function MedicalChatbot() {
                 </button>
               </div>
 
-              {/* Footer disclaimer — login info strip style */}
-              <p className="text-center text-[0.65rem] mt-2.5"
+              <p className="text-center text-[0.65rem] mt-2"
                 style={{ color: "rgba(255,255,255,0.13)", fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
                 ⚕ MediAI provides guidance only — always seek professional medical care for emergencies.
               </p>
